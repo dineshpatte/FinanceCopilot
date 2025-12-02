@@ -32,7 +32,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     };
 
     @Override
-    public List<Expense> getAllExpenses() {
+    public List<Expense> getAllExpenses(Long id) {
         user currentUser = userService.getCurrentUser();
         List<Expense> expenses = expenseRepository.findByUser_Id(currentUser.getId());
 
