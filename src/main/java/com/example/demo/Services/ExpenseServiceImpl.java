@@ -4,10 +4,11 @@ import com.example.demo.DTO.Expenserequest;
 import com.example.demo.Entities.Expense;
 import com.example.demo.Entities.user;
 import com.example.demo.Repositories.ExpenseRepository;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-
+@Service
 public class ExpenseServiceImpl implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
