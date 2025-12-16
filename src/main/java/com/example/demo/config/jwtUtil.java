@@ -15,13 +15,14 @@ import java.util.Date;
 @Configuration
 public class jwtUtil {
 
-    private final String SECRET = "secret";
+    private final String SECRET = "dGhpcy1pc24tdGhlLXJlYWwtc2VjdXJlLXNlY3JldC1rZXktZm9yLWp3dA==";
 
     private final long EXPIRATION = 1000*60*60*10;
 
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        byte[] keyBytes = java.util.Base64.getDecoder().decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
 

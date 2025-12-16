@@ -7,26 +7,28 @@ import com.example.demo.Repositories.UserRepository;
 import com.example.demo.config.jwtUtil;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl implements userService{
+
+public class UserServiceImpl implements userService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final jwtUtil jwtUtil;
+
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.jwtUtil = new jwtUtil();
     }
+
     @Override
     public user register(Registerrequest registerrequest) {
-
-
         if(userRepository.findByEmail(registerrequest.getEmail()).isPresent()){
             throw new UsernameNotFoundException("Email Already Exists");
         }
@@ -37,29 +39,25 @@ public class UserServiceImpl implements userService{
         user.setPassword(passwordEncoder.encode(registerrequest.getPassword()));
 
         return userRepository.save(user);
-    };
+    }
 
     @Override
     public String login(Loginrequest loginrequest) {
-       if(!userRepository.findByEmail(loginrequest.getEmail()).isPresent()){
-           throw new UsernameNotFoundException("Email Is Invalid");
-       }
+        user user = userRepository.findByEmail(loginrequest.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Email Is Invalid"));
 
-       user user = userRepository.findByEmail(loginrequest.getEmail()).get();
+        if(!passwordEncoder.matches(loginrequest.getPassword(), user.getPassword())){
+            throw new RuntimeException("Wrong Password");
+        }
 
-       if(!passwordEncoder.matches(loginrequest.getPassword(),user.getPassword())){
-           throw new RuntimeException("Wrong Password");
-       }
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .authorities("USER")
+                .authorities("USER") // no roles required, just for Spring
                 .build();
 
-
-       return jwtUtil.generateToken(userDetails);
-
+        return jwtUtil.generateToken(userDetails);
     }
 
     @Override
@@ -76,4 +74,15 @@ public class UserServiceImpl implements userService{
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        user user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .authorities("USER") // or empty list
+                .build();
+    }
 }
