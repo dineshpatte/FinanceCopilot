@@ -6,11 +6,13 @@ import com.example.demo.Entities.Expense;
 import com.example.demo.Entities.user;
 import com.example.demo.Services.ExpenseService;
 import com.example.demo.Services.userService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/expenses")
@@ -36,21 +38,26 @@ public class ExpenseController {
 
     @GetMapping
     public ResponseEntity<List<Expense>> getuserExpenses() {
-        user currentUser = userService.getCurrentUser();
-        return ResponseEntity.ok(expenseService.getAllExpenses(currentUser.getId()));
+
+        return ResponseEntity.ok(expenseService.getAllExpenses());
 
     }
 
     @GetMapping("/monthly-expenses")
-    public ResponseEntity<List<Expense>> getmontlyExpenses(@RequestParam int year, @RequestParam int month) {
-        user currentUser = userService.getCurrentUser();
+    public ResponseEntity<?> getMonthlyExpenses(@RequestParam int year, @RequestParam int month) {
+        System.out.println("\n=== CONTROLLER REACHED ===");
+        System.out.println("Year: " + year + ", Month: " + month);
 
-
-
-        List<Expense> expenses = expenseService.getMonthlyExpenses(year, month);
-        return ResponseEntity.ok(expenses);
+        try {
+            List<Expense> expenses = expenseService.getMonthlyExpenses(year, month);
+            System.out.println("Success! Returning " + expenses.size() + " expenses");
+            return ResponseEntity.ok(expenses);
+        } catch (Exception e) {
+            System.out.println("ERROR in controller: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteExpense(@PathVariable Long id) {
         expenseService.deleteExpense(id);

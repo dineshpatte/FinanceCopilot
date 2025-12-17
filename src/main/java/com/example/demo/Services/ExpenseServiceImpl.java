@@ -27,26 +27,48 @@ public class ExpenseServiceImpl implements ExpenseService {
                .amount(expenserequest.getAmount())
                .date(LocalDate.now())
                .note(expenserequest.getNote())
+               .user(currentUser)
+
                .build();
       Expense newExpense = expenseRepository.save(expense);
       return newExpense;
     };
 
     @Override
-    public List<Expense> getAllExpenses(Long id) {
+    public List<Expense> getAllExpenses() {
         user currentUser = userService.getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUser_Id(currentUser.getId());
-
-        return List.of(expenses.toArray(new Expense[expenses.size()]));
+      return expenseRepository.findByUser_Id(currentUser.getId());
     }
 
     @Override
     public List<Expense> getMonthlyExpenses(int year, int month) {
-        user currentUser = userService.getCurrentUser();
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.plusMonths(1);
-        List<Expense> expenses = expenseRepository.findByUser_IdAndDateBetween(currentUser.getId(), startDate,endDate);
-        return List.of(expenses.toArray(new Expense[expenses.size()]));
+        System.out.println("\n=== Getting Monthly Expenses ===");
+
+        try {
+            user currentUser = userService.getCurrentUser();
+            System.out.println("Current user ID: " + currentUser.getId());
+            System.out.println("Current user email: " + currentUser.getEmail());
+
+            LocalDate startDate = LocalDate.of(year, month, 1);
+            LocalDate endDate = startDate.plusMonths(1);
+
+            System.out.println("Searching expenses from: " + startDate + " to: " + endDate);
+
+            List<Expense> expenses = expenseRepository.findByUser_IdAndDateBetween(
+                    currentUser.getId(),
+                    startDate,
+                    endDate
+            );
+
+            System.out.println("Found " + expenses.size() + " expenses");
+            System.out.println("=== End Getting Monthly Expenses ===\n");
+
+            return expenses;
+        } catch (Exception e) {
+            System.out.println("✗ Error in getMonthlyExpenses: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 

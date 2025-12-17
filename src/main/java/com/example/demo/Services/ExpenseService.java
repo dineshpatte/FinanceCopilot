@@ -11,7 +11,7 @@ public interface ExpenseService {
 
     Expense addExpense(Expenserequest expenserequest);
 
-  List<Expense> getAllExpenses(Long id);
+  List<Expense> getAllExpenses();
 
   List<Expense> getMonthlyExpenses(int year, int month);
 

@@ -54,7 +54,7 @@ public class UserServiceImpl implements userService, UserDetailsService {
                 .builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .authorities("USER") // no roles required, just for Spring
+                .authorities("ROLE_USER") // no roles required, just for Spring
                 .build();
 
         return jwtUtil.generateToken(userDetails);
@@ -82,7 +82,7 @@ public class UserServiceImpl implements userService, UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .authorities("USER") // or empty list
+                .authorities("ROLE_USER") // or empty list
                 .build();
     }
 }
