@@ -4,13 +4,16 @@ package com.example.demo.Controllers;
 import com.example.demo.DTO.Expenserequest;
 import com.example.demo.Entities.Expense;
 import com.example.demo.Entities.user;
+import com.example.demo.Repositories.ExpenseRepository;
 import com.example.demo.Services.ExpenseService;
+import com.example.demo.Services.agentService;
 import com.example.demo.Services.userService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,10 +23,12 @@ import java.util.Map;
 public class ExpenseController {
     private final ExpenseService expenseService;
     private final userService userService;
+    private final agentService agentService;
 
-    public ExpenseController(ExpenseService expenseService, userService userService) {
+    public ExpenseController(ExpenseService expenseService, userService userService, agentService agentService) {
         this.expenseService = expenseService;
         this.userService = userService;
+        this.agentService = agentService;
     }
 
     //create expense
@@ -64,5 +69,25 @@ public class ExpenseController {
 
         return ResponseEntity.ok("Expense has been deleted");
 
+    }
+
+    @GetMapping("/expense-suggestions")
+    public ResponseEntity<?> getExpenseSuggestions(@RequestParam int year, @RequestParam int month) {
+        try{
+            List<Expense> expenses = expenseService.getMonthlyExpenses(year, month);
+
+            if(expenses.isEmpty()){
+                return ResponseEntity.ok(Map.of(
+                        "message","No expenses found"
+                ));
+            }
+
+            Map<String,Object> suggestions  = agentService.getExpenseSuggestions(expenses,year,month);
+
+            return ResponseEntity.ok(suggestions);
+        }
+        catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
 }
